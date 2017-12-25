@@ -50,7 +50,6 @@ bool initScripting()
 		using namespace boost::python;
 
 		exec("import al", mainDict());
-		exec("print(\"Audiolysis \" + al.version())", mainDict());
 	}
 
 	return initialised;

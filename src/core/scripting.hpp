@@ -60,7 +60,7 @@ inline std::string traceback() noexcept
 	    value == nullptr ||
 	    traceBack == nullptr)
 	{
-		return "Unknown Error\n";
+		return "Command Incomplete\n";
 	}
 	// Needed to prevent exception from being thrown.
 	PyErr_NormalizeException(&exType, &value, &traceBack);
