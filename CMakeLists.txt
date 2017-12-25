@@ -18,6 +18,7 @@ set(StdFeatures
 	cxx_delegating_constructors
 	cxx_auto_type
 	cxx_constexpr
+	cxx_lambda_init_captures
 	)
 
 # Include Python
@@ -48,19 +49,30 @@ find_package(Threads REQUIRED)
 # FFTW
 find_library(FFTW_LIBRARY NAMES fftw3)
 
-#qt5_add_resources(QtCompiledResources ${PROJECT_SOURCE_DIR}/resources.qrc)
-
 set(FileSource
 	src/main.cpp
+	src/core/Configuration.cpp
 	src/core/scripting.cpp
 	src/test/test.cpp
 	src/test/scripting/testScripting.cpp
+	src/ui/MainWindow.cpp
+	src/ui/DialogAbout.cpp
+	src/ui/terminal.cpp
 	)
-# set(FileQObjects ...)
-# qt5_wrap_cpp(QtMOCSourceFiles ${FileQObjects})
+qt5_wrap_cpp(QtMOCSourceFiles
+	src/ui/MainWindow.hpp
+	src/ui/DialogAbout.hpp
+	src/ui/terminal.hpp
+	)
+
+qt5_add_resources(QtCompiledResources
+	${PROJECT_SOURCE_DIR}/assets//resources.qrc
+	)
 
 add_executable(Audiolysis
 	${FileSource}
+	${QtMOCSourceFiles}
+	${QtCompiledResources}
 	)
 target_link_libraries(Audiolysis ${PYTHON_LIBRARIES})
 target_link_libraries(Audiolysis ${Boost_LIBRARIES})

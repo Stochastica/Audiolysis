@@ -1,8 +1,12 @@
 #include <iostream>
 
 #include <boost/program_options.hpp>
+#include <QApplication>
 
 #include "core/audiolysis.hpp"
+#include "core/Configuration.hpp"
+#include "core/scripting.hpp"
+#include "ui/MainWindow.hpp"
 
 #ifndef NDEBUG
 	#include "test/test.hpp"
@@ -54,7 +58,23 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	std::cout << "Hello, World!\n";
+	// Normal execution
+	
+	Configuration config;
+	initScripting();
 
-	return 0;
+	QApplication application(argc, argv);
+	MainWindow window(&config);
+	{ // Configure Application name and logo
+		QIcon logo(":logo.png");
+		application.setApplicationName(AUDIOLYSIS_NAME);
+		application.setWindowIcon(logo);
+		window.setWindowIcon(logo);
+	}
+
+	window.show();
+
+	boost::python::exec("print(\"Audiolysis \" + al.version())", mainDict());
+
+	return application.exec();
 }

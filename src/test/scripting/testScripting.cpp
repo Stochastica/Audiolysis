@@ -1,7 +1,11 @@
 #include "testScripting.hpp"
 
 #include <cassert>
+#include <iosfwd>
+
 #include <Python.h>
+#include <boost/iostreams/categories.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/python.hpp>
 
 #include "../testing.hpp"
@@ -42,6 +46,51 @@ bool test_s1()
 		return false;
 	}
 }
+bool test_s2()
+{
+	namespace bio = boost::iostreams;
+
+	// Custom stream sink
+	class testSink final
+	{
+	public:
+		typedef char char_type;
+		typedef bio::sink_tag category;
+
+		testSink(int) {}
+
+		std::streamsize write(char_type const* s, std::streamsize n)
+		{
+			for (std::streamsize i = 0; i < n; ++i)
+			{
+				if (s[i] == '\n')
+				{
+					std::cout << "[Linea] " << buf << std::endl;;
+					buf.clear();
+				}
+				else
+				{
+					buf += s[i];
+				}
+			}
+			return n;
+		}
+
+	private:
+		std::string buf;
+	};
+
+	int dummy;
+	bio::stream<testSink> out(dummy);
+
+	// Output some random text
+	out << "Arma";
+	out << " Virumque";
+	out << " Cano" << std::endl;
+	out << "Troiae ab primis oris\n";
+
+	return true;
+}
 
 bool testScripting(std::string id)
 {
@@ -53,6 +102,7 @@ bool testScripting(std::string id)
 	}
 
 	TEST_FUNC(s1);
+	TEST_FUNC(s2);
 
 	TEST_FINAL;
 }
