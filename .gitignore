@@ -1,0 +1,14 @@
+# Hide all hidden files
+.*
+!/.gitignore
+
+# Hide cache objects
+*.o
+*.swp
+
+# Build directories
+bin
+build
+
+# Special
+compile_commands.json
