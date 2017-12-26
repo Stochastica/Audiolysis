@@ -12,7 +12,7 @@ std::map<std::string, std::string> testInfo()
 
 	info["0"] = "Dummy test object";
 	info["s1"] = "Scripting Interface";
-	info["s2"] = "Terminal output stream sink test";
+	info["s2"] = "Stdout, Stderr redirector";
 
 	return info;
 }

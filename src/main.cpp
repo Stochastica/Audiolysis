@@ -53,7 +53,10 @@ int main(int argc, char* argv[])
 		std::string testId = options["test"].as<std::string>();
 		bool result = test(testId);
 
-		std::cout << (result ? "Test successful\n" : "Test failed\n");
+		if (result)
+			std::cout << "----- Test successful -----\n";
+		else
+			std::cout << "----- Test failed -----\n";
 
 		return 0;
 	}

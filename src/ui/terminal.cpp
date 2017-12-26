@@ -2,10 +2,6 @@
 
 #include <iosfwd>
 
-#include <boost/iostreams/categories.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <boost/iostreams/tee.hpp>
-
 #include <QKeyEvent>
 #include <QSplitter>
 #include <QVBoxLayout>

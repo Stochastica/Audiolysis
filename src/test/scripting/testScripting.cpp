@@ -3,14 +3,10 @@
 #include <cassert>
 #include <iosfwd>
 
-#include <Python.h>
-#include <boost/iostreams/categories.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <boost/python.hpp>
-
 #include "../testing.hpp"
 #include "../../core/scripting.hpp"
 #include "../../core/audiolysis.hpp"
+#include "../../ui/terminal.hpp"
 
 namespace al
 {
@@ -48,46 +44,31 @@ bool test_s1()
 }
 bool test_s2()
 {
-	namespace bio = boost::iostreams;
-
-	// Custom stream sink
-	class testSink final
+	try
 	{
-	public:
-		typedef char char_type;
-		typedef bio::sink_tag category;
+		using namespace boost::python;
 
-		testSink(int) {}
+		mainDict()["al_OutputRedirector"] =
+		  boost::python::class_<OutputRedirector>("OutputRedirector",
+		      boost::python::no_init)
+		  .def("write", &OutputRedirector::write);
 
-		std::streamsize write(char_type const* s, std::streamsize n)
+		boost::python::import("sys").attr("stdout") =
+		  OutputRedirector("[Out] ",
+		                   [](std::string str)
 		{
-			for (std::streamsize i = 0; i < n; ++i)
-			{
-				if (s[i] == '\n')
-				{
-					std::cout << "[Linea] " << buf << std::endl;;
-					buf.clear();
-				}
-				else
-				{
-					buf += s[i];
-				}
-			}
-			return n;
-		}
+			// Actual raw input are processed here...
+		});
 
-	private:
-		std::string buf;
-	};
-
-	int dummy;
-	bio::stream<testSink> out(dummy);
-
-	// Output some random text
-	out << "Arma";
-	out << " Virumque";
-	out << " Cano" << std::endl;
-	out << "Troiae ab primis oris\n";
+		sprintl("Arma Virumque Cano");
+		sprintl("Troiae ab primis oris");
+	}
+	catch (boost::python::error_already_set&)
+	{
+		std::cerr << traceback();
+		PyErr_Clear();
+		return false;
+	}
 
 	return true;
 }

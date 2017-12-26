@@ -38,11 +38,18 @@ public:
  */
 std::string traceback() noexcept;
 
+// Python Object extraction functions
+// Do not call them before initScripting()
 /**
  * @brief Extracts the main dict.
- * @warning Do not call this before initialising python.
  */
 boost::python::dict& mainDict();
+/**
+ * @brief Prints a string in the Python interface
+ *
+ * Just like the Python print(), this function appends a newline.
+ */
+void sprintl(std::string);
 
 
 // Implementations
@@ -84,6 +91,12 @@ inline boost::python::dict& mainDict()
 	static dict d = extract<dict>(module.attr("__dict__"));
 
 	return d;
+}
+inline void sprintl(std::string str)
+{
+	using namespace boost::python;
+	object printer = eval("print", mainDict());
+	printer(str);
 }
 
 } // namespace al
