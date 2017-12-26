@@ -6,7 +6,7 @@
 #include <QHBoxLayout>
 #include <QSplitter>
 
-#include <QLineEdit>
+#include <QDockWidget>
 
 #include "DialogAbout.hpp"
 #include "terminal.hpp"
@@ -22,11 +22,51 @@ MainWindow::MainWindow(Configuration* const config):
 {
 	setWindowTitle(AUDIOLYSIS_NAME);
 
+	// Panels and Windows menu
+	{
+		QMenu* menuWindows = menuBar()->addMenu(tr("Windows"));
+
+		QAction* aResetLayout = new QAction(tr("Reset Layout"));
+		menuWindows->addAction(aResetLayout);
+		connect(aResetLayout, &QAction::triggered,
+		        this, &MainWindow::resetLayout);
+		menuWindows->addSeparator();
+
+		// Loads the panels and corresponding menu actions
+
+		pControl = new PanelControl;
+		QAction* apControl = new QAction(tr("Control"));
+		menuWindows->addAction(apControl);
+		apControl->setCheckable(true);
+		connect(pControl, &PanelControl::visibilityChanged,
+		        apControl, &QAction::setChecked);
+		connect(apControl, &QAction::toggled,
+		        pControl, &PanelControl::setVisible);
+
+		pPlayback = new PanelPlayback;
+		QAction* apPlayback = new QAction(tr("Playback"));
+		menuWindows->addAction(apPlayback);
+		apPlayback->setCheckable(true);
+		connect(pPlayback, &PanelPlayback::visibilityChanged,
+		        apPlayback, &QAction::setChecked);
+		connect(apPlayback, &QAction::toggled,
+		        pPlayback, &PanelPlayback::setVisible);
+
+		pResources = new PanelResources;
+		QAction* apResources = new QAction(tr("Resources"));
+		menuWindows->addAction(apResources);
+		apResources->setCheckable(true);
+		connect(pResources, &PanelResources::visibilityChanged,
+		        apResources, &QAction::setChecked);
+		connect(apResources, &QAction::toggled,
+		        pResources, &PanelResources::setVisible);
+	}
+
 	// Loads menus
 	{
 		QMenu* menuHelp = menuBar()->addMenu(tr("Help"));
 		{
-			QAction* actionAbout = new QAction(tr("About"), this);
+			QAction* actionAbout = new QAction(tr("About"));
 			connect(actionAbout, &QAction::triggered,
 			        this, [this](bool)
 			{
@@ -45,6 +85,7 @@ MainWindow::MainWindow(Configuration* const config):
 
 		{
 			QSplitter* splitterCommand = new QSplitter;
+			statusBar()->addPermanentWidget(splitterCommand);
 
 			{
 				LineEditCommand* lec;
@@ -59,21 +100,38 @@ MainWindow::MainWindow(Configuration* const config):
 			}
 
 			splitterCommand->setSizePolicy(sizePolicyFill);
-			statusBar()->addPermanentWidget(splitterCommand);
 		}
 
 		{
 			QPushButton* buttonTerminal = new QPushButton;
+			statusBar()->addPermanentWidget(buttonTerminal);
 			buttonTerminal->setIcon(QIcon(":/icons/terminal.png"));
 			connect(buttonTerminal, &QPushButton::clicked,
 			        this, [this]()
 			{
 				this->terminal->show();
 			});
-			statusBar()->addPermanentWidget(buttonTerminal);
 		}
 		//statusBar()->show();
 	}
+
+	// Initialise to default
+	resetLayout();
+}
+
+void MainWindow::resetLayout()
+{
+	pControl->setVisible(true);
+	Q_EMIT pControl->visibilityChanged(true);
+	addDockWidget(Qt::LeftDockWidgetArea, pControl);
+
+	pPlayback->setVisible(true);
+	Q_EMIT pPlayback->visibilityChanged(true);
+	tabifyDockWidget(pControl, pPlayback);
+
+	pResources->setVisible(true);
+	Q_EMIT pResources->visibilityChanged(true);
+	addDockWidget(Qt::RightDockWidgetArea, pResources);
 }
 
 } // namespace al

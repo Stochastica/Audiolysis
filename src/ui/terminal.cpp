@@ -183,18 +183,18 @@ Terminal::Terminal(QWidget* parent):
 	{ // Loads menus
 		QMenu* menuFile = menuBar()->addMenu(tr("File"));
 
-		QAction* actionLoadScript = new QAction(tr("Load Script..."), this);
-		menuFile->addAction(actionLoadScript);
+		QAction* aLoadScript = new QAction(tr("Load Script..."));
+		menuFile->addAction(aLoadScript);
 		
 
 		QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
 
-		QAction* actionPreserveInput = new QAction(tr("Preserve Input"), this);
-		actionPreserveInput->setCheckable(true);
-		actionPreserveInput->setChecked(true);
-		connect(actionPreserveInput, &QAction::toggled,
+		QAction* aPreserveInput = new QAction(tr("Preserve Input"));
+		aPreserveInput->setCheckable(true);
+		aPreserveInput->setChecked(true);
+		connect(aPreserveInput, &QAction::toggled,
 		        fieldIn, &TerminalFieldIn::onPreserveInputToggled);
-		menuEdit->addAction(actionPreserveInput);
+		menuEdit->addAction(aPreserveInput);
 	}
 	{ // Loads core widgets
 		QSplitter* splitter = new QSplitter(Qt::Vertical);
