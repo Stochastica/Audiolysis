@@ -1,3 +1,4 @@
+// Entry point of the application
 #include <iostream>
 
 #include <boost/program_options.hpp>
@@ -71,6 +72,8 @@ int main(int argc, char* argv[])
 	{ // Configure Application name and logo
 		QIcon logo(":logo.png");
 		application.setApplicationName(AUDIOLYSIS_NAME);
+		window.setWindowTitle(AUDIOLYSIS_NAME);
+
 		application.setWindowIcon(logo);
 		window.setWindowIcon(logo);
 	}

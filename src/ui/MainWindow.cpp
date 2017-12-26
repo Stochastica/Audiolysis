@@ -6,12 +6,8 @@
 #include <QHBoxLayout>
 #include <QSplitter>
 
-#include <QDockWidget>
-
 #include "DialogAbout.hpp"
 #include "terminal.hpp"
-
-#include "../core/audiolysis.hpp"
 
 namespace al
 {
@@ -20,8 +16,6 @@ MainWindow::MainWindow(Configuration* const config):
 	QMainWindow(nullptr),
 	config(config)
 {
-	setWindowTitle(AUDIOLYSIS_NAME);
-
 	// Panels and Windows menu
 	{
 		QMenu* menuWindows = menuBar()->addMenu(tr("Windows"));
