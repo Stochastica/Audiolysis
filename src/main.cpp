@@ -3,6 +3,7 @@
 
 #include <boost/program_options.hpp>
 #include <QApplication>
+#include <QSplashScreen>
 
 #include "core/audiolysis.hpp"
 #include "core/Configuration.hpp"
@@ -64,10 +65,25 @@ int main(int argc, char* argv[])
 
 	// Normal execution
 	
-	Configuration config;
-	initScripting();
-
 	QApplication application(argc, argv);
+
+	QSplashScreen splash(QPixmap(":logo.png"));
+	splash.show();
+
+#define SPLASH_STAGE(text) \
+	QApplication::processEvents(); \
+	splash.showMessage(application.tr(text), \
+	                   Qt::AlignBottom | Qt::AlignHCenter, \
+	                   Qt::white)
+
+	SPLASH_STAGE("Loading Configurations");
+	Configuration config;
+
+	SPLASH_STAGE("Loading Scripting Interface");
+	initScripting();
+	QApplication::processEvents();
+
+	SPLASH_STAGE("Initialising Main Window");
 	MainWindow window(&config);
 	{ // Configure Application name and logo
 		QIcon logo(":logo.png");
@@ -77,8 +93,9 @@ int main(int argc, char* argv[])
 		application.setWindowIcon(logo);
 		window.setWindowIcon(logo);
 	}
-
+	SPLASH_STAGE("Welcome!");
 	window.show();
+	splash.finish(&window);
 
 	boost::python::exec("print(\"Audiolysis \" + al.version())", mainDict());
 
