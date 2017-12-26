@@ -1,5 +1,7 @@
 # Audiolysis
 
+![Audiolysis](doc/logo.png)
+
 An audio visualisation and editing tool.
 
 ## Usage
