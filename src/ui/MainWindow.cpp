@@ -1,10 +1,10 @@
 #include "MainWindow.hpp"
 
+#include <QHBoxLayout>
 #include <QMenuBar>
 #include <QPushButton>
-#include <QStatusBar>
-#include <QHBoxLayout>
 #include <QSplitter>
+#include <QStatusBar>
 
 #include "DialogAbout.hpp"
 #include "terminal.hpp"

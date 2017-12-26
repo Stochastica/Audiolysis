@@ -12,15 +12,73 @@
 namespace al
 {
 
+SyntaxHighlighterPython::SyntaxHighlighterPython(QTextDocument* parent):
+	QSyntaxHighlighter(parent)
+{
+	Rule rule;
+	QStringList patternKeywords;
+
+	for (auto&& keyword :
+	     {"and", "as", "assert", "break", "class",
+	      "continue", "def", "del", "elif", "else",
+	      "except", "exec", "finally", "for", "from",
+	      "global", "if", "import", "in", "is",
+	      "lambda", "not", "or", "pass", "print",
+	      "raise", "return", "try", "while", "with",
+	      "yield"
+	     })
+	{
+		patternKeywords << "\\b" + QString(keyword) + "\\b";
+	}
+	for (QString const& pattern: patternKeywords)
+	{
+		patternsKeyword.append(QRegExp(pattern));
+	}
+
+	// This regex is composed of two parts.
+	// /"(?:[^"\\]|\\.)*"/ : Matches any double quoted string with escaped double
+	// quotes
+	// /'(?:[^'\\]|\\.)*'/ : Matches any single quoted string with escaped single
+	// quotes
+	// Four \'s are used to escape the slashes which are again escaped by the
+	// regex.
+	// Example: "aaa\"bbb", "aa'bb", 'aa\'bb"cc' are matched.
+	ruleQuoted.pattern = QRegExp("\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'");
+	ruleQuoted.format.setForeground(Qt::darkGreen);
+
+	ruleComment.pattern = QRegExp("#[^\n]*");
+	ruleComment.format.setForeground(Qt::green);
+
+}
+void SyntaxHighlighterPython::setColors(QColor const& cKeyword)
+{
+	formatKeyword.setForeground(cKeyword);
+}
+void SyntaxHighlighterPython::highlightBlock(QString const& text)
+{
+	for (auto const& pattern: patternsKeyword)
+	{
+		int index = pattern.indexIn(text);
+		while (index >= 0)
+		{
+			int length = pattern.matchedLength();
+			setFormat(index, length, formatKeyword);
+			index = pattern.indexIn(text, index + length);
+		}
+	}
+}
+
+
+
 LineEditCommand::LineEditCommand(QWidget* parent): QLineEdit(parent)
 {
 }
-void LineEditCommand::setColors(QColor const& front,
-                                QColor const& back)
+void LineEditCommand::setStyle(Configuration const& c)
 {
+	setFont(c.ui_monospace);
 	QPalette palette;
-	palette.setColor(QPalette::Text, front);
-	palette.setColor(QPalette::Base, back);
+	palette.setColor(QPalette::Base, c.ui_python_cb);
+	palette.setColor(QPalette::Text, c.ui_python_cf);
 	setPalette(palette);
 }
 void LineEditCommand::keyPressEvent(QKeyEvent* event)
@@ -48,16 +106,14 @@ LineTerminal::LineTerminal(QWidget* parent):
 	setReadOnly(true); // Edit not allowed
 }
 
-void LineTerminal::setColors(QColor const& cOF,
-                             QColor const& cOB,
-                             QColor const& cEF,
-                             QColor const& cEB)
+void LineTerminal::setStyle(Configuration const& c)
 {
-	paletteOut.setColor(QPalette::Base, cOB);
-	paletteOut.setColor(QPalette::Text, cOF);
+	setFont(c.ui_monospace);
+	paletteOut.setColor(QPalette::Base, c.ui_LineTerminal_cob);
+	paletteOut.setColor(QPalette::Text, c.ui_LineTerminal_cof);
 
-	paletteErr.setColor(QPalette::Base, cEB);
-	paletteErr.setColor(QPalette::Text, cEF);
+	paletteErr.setColor(QPalette::Base, c.ui_LineTerminal_ceb);
+	paletteErr.setColor(QPalette::Text, c.ui_LineTerminal_cef);
 }
 void LineTerminal::clearText()
 {
@@ -69,8 +125,8 @@ void LineTerminal::clearText()
  * @brief Process the buffer for LineTerminal
  */
 std::string processLTBuffer(std::string* const out,
-		std::string buffer,
-		std::string in)
+                            std::string buffer,
+                            std::string in)
 {
 	// Find last newline character
 	int n = in.size();
@@ -99,13 +155,15 @@ std::string processLTBuffer(std::string* const out,
 		while (index2 >= 0 && in[index2] != '\n') --index2;
 
 		if (index2 == -1)
-		{ // Only one newline exists
+		{
+			// Only one newline exists
 			*out = buffer + in.substr(0, index);
 
 			return in.substr(index + 1);
 		}
 		else
-		{ // Found a second newline
+		{
+			// Found a second newline
 			*out = in.substr(index2 + 1, index);
 
 			return in.substr(index + 1);
@@ -134,24 +192,51 @@ TerminalFieldOut::TerminalFieldOut(QWidget* parent): QTextEdit(parent)
 {
 	setReadOnly(true);
 }
+void TerminalFieldOut::setStyle(Configuration const& c)
+{
+	setFont(c.ui_monospace);
+	setTabStopWidth(c.ui_monospace_tabwidth);
+	QPalette palette;
+	palette.setColor(QPalette::Base, c.ui_terminal_cb);
+	setPalette(palette);
+	cOut = c.ui_terminal_cfOut;
+	cErr = c.ui_terminal_cfErr;
+}
 void TerminalFieldOut::onStdOutFlush(std::string str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#000000;\">" +
-			QString::fromStdString(str).replace('\n', "<br>") +
-			"</span>");
+	insertHtml(
+	  "<span style=\"color:" + cOut.name() + ";\">" +
+	  QString::fromStdString(str).replace('\n', "<br>") +
+	  "</span>"
+	);
 	moveCursor(QTextCursor::End);
 }
 void TerminalFieldOut::onStdErrFlush(std::string str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#FF0000;\">" +
-			QString::fromStdString(str).replace('\n', "<br>") +
-			"</span>");
+	insertHtml(
+	  "<span style=\"color:" + cErr.name() + ";\">" +
+	  QString::fromStdString(str).replace('\n', "<br>") +
+	  "</span>"
+	);
 	moveCursor(QTextCursor::End);
 }
-TerminalFieldIn::TerminalFieldIn(QWidget* parent): QPlainTextEdit(parent)
+TerminalFieldIn::TerminalFieldIn(QWidget* parent):
+	QPlainTextEdit(parent),
+	syntaxHighlighter(new SyntaxHighlighterPython(document())),
+	preserveInput(true)
 {
+}
+void TerminalFieldIn::setStyle(Configuration const& c)
+{
+	setFont(c.ui_monospace);
+	setTabStopWidth(c.ui_monospace_tabwidth);
+	QPalette palette;
+	palette.setColor(QPalette::Base, c.ui_python_cb);
+	palette.setColor(QPalette::Text, c.ui_python_cf);
+	setPalette(palette);
+	syntaxHighlighter->setColors(c.ui_python_chKey);
 }
 void TerminalFieldIn::keyPressEvent(QKeyEvent* event)
 {
@@ -180,12 +265,13 @@ Terminal::Terminal(QWidget* parent):
 	fieldOut(new TerminalFieldOut), fieldIn(new TerminalFieldIn)
 {
 	setWindowTitle(tr("Terminal"));
-	{ // Loads menus
+	{
+		// Loads menus
 		QMenu* menuFile = menuBar()->addMenu(tr("File"));
 
 		QAction* aLoadScript = new QAction(tr("Load Script..."));
 		menuFile->addAction(aLoadScript);
-		
+
 
 		QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
 
@@ -196,7 +282,8 @@ Terminal::Terminal(QWidget* parent):
 		        fieldIn, &TerminalFieldIn::onPreserveInputToggled);
 		menuEdit->addAction(aPreserveInput);
 	}
-	{ // Loads core widgets
+	{
+		// Loads core widgets
 		QSplitter* splitter = new QSplitter(Qt::Vertical);
 
 		splitter->addWidget(fieldOut);
@@ -214,21 +301,12 @@ void createTerminalWidgets(LineEditCommand** const lec,
                            Configuration const& config)
 {
 	*lec = new LineEditCommand(parent);
-	(*lec)->setFont(config.ui_monospace);
-	(*lec)->setColors(
-	  config.ui_LineEditCommand_cf,
-	  config.ui_LineEditCommand_cb);
+	(*lec)->setStyle(config);
 	*lt = new LineTerminal(parent);
-	(*lt)->setFont(config.ui_monospace);
-	(*lt)->setColors(
-	  config.ui_LineTerminal_cof,
-	  config.ui_LineTerminal_cob,
-	  config.ui_LineTerminal_cef,
-	  config.ui_LineTerminal_ceb
-	);
+	(*lt)->setStyle(config);
 	*t = new Terminal(parent);
-	(*t)->fieldOut->setFont(config.ui_monospace);
-	(*t)->fieldIn->setFont(config.ui_monospace);
+	(*t)->fieldOut->setStyle(config);
+	(*t)->fieldIn->setStyle(config);
 
 	LineTerminal* lineTerminal = *lt;
 	Terminal* terminal = *t;

@@ -5,8 +5,8 @@
 #include <QApplication>
 #include <QSplashScreen>
 
-#include "core/audiolysis.hpp"
 #include "core/Configuration.hpp"
+#include "core/audiolysis.hpp"
 #include "core/scripting.hpp"
 #include "ui/MainWindow.hpp"
 
@@ -81,7 +81,6 @@ int main(int argc, char* argv[])
 
 	SPLASH_STAGE("Loading Scripting Interface");
 	initScripting();
-	QApplication::processEvents();
 
 	SPLASH_STAGE("Initialising Main Window");
 	MainWindow window(&config);
@@ -93,6 +92,7 @@ int main(int argc, char* argv[])
 		application.setWindowIcon(logo);
 		window.setWindowIcon(logo);
 	}
+
 	SPLASH_STAGE("Welcome!");
 	window.show();
 	splash.finish(&window);

@@ -16,12 +16,18 @@ public:
 	Configuration();
 
 	QFont ui_monospace;
-	QColor ui_LineEditCommand_cf;
-	QColor ui_LineEditCommand_cb;
+	int ui_monospace_tabwidth; ///< Tabwidth in Qt units.
+
 	QColor ui_LineTerminal_cof;
 	QColor ui_LineTerminal_cob;
 	QColor ui_LineTerminal_cef;
 	QColor ui_LineTerminal_ceb;
+	QColor ui_terminal_cb;
+	QColor ui_terminal_cfOut;
+	QColor ui_terminal_cfErr;
+	QColor ui_python_cb;
+	QColor ui_python_cf;
+	QColor ui_python_chKey; ///< Keyword Syntax Highlighting colour
 };
 
 } // namespace al
