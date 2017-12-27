@@ -50,11 +50,13 @@ int main(int argc, char* argv[])
 		}
 	}
 
+#ifndef NDEBUG
 	if (options.count("test"))
 	{
 		std::string testId = options["test"].as<std::string>();
-		bool result = test(testId);
 
+		std::cout << "-----Executing Test " << testId << "-----\n";
+		bool result = test(testId);
 		if (result)
 			std::cout << "----- Test successful -----\n";
 		else
@@ -62,6 +64,7 @@ int main(int argc, char* argv[])
 
 		return 0;
 	}
+#endif
 
 	// Normal execution
 	
@@ -97,7 +100,8 @@ int main(int argc, char* argv[])
 	window.show();
 	splash.finish(&window);
 
-	boost::python::exec("print(\"Audiolysis \" + al.version())", mainDict());
+	// Print name and version
+	sprintl(AUDIOLYSIS_NAME " " AUDIOLYSIS_VERSION);
 
 	return application.exec();
 }

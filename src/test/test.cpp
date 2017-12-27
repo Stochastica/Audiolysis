@@ -25,7 +25,6 @@ bool test_0()
 
 bool test(std::string id)
 {
-	std::cout << "-----Executing Test " << id << "-----\n";
 	if (id.at(0) == 's')
 		return testScripting(id);
 
